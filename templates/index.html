@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic-Tac-Toe</title>
+    <style>
+        /* The CSS remains unchanged */
+        body {
+            background-image: url(https://plus.unsplash.com/premium_photo-1683121710572-7723bd2e235d?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D);
+            background-size: cover;
+            background-position: center;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            line-height: 100px;
+            font-size: 36px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #fff;
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        .cell.X {
+            color: #ff4b5c;
+        }
+        .cell.O {
+            color: #1e90ff;
+        }
+        .cell:hover {
+            transform: scale(1.1);
+        }
+        .status {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+        }
+        .reset-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        .reset-button:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.05);
+        }
+        .reset-button:active {
+            background: rgba(255, 255, 255, 0.45);
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <div class="status" id="status">Player X's turn</div>
+        <button class="reset-button" id="restart">Reset Game</button>
+    </div>
+
+    <!-- Your JavaScript code should be placed inside <script> tags -->
+   <script>
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const restartButton = document.getElementById('restart');
+
+        board.addEventListener('click', function(event) {
+            if (event.target.classList.contains('cell')) {
+                const index = event.target.getAttribute('data-index');
+                fetch('/play', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ move: index })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    updateBoard(data.board);
+                    updateStatus(data.status);
+                });
+            }
+        });
+
+        restartButton.addEventListener('click', function() {
+            fetch('/restart', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                updateBoard(data.board);
+                updateStatus(data.status);
+            });
+        });
+
+        function updateBoard(boardState) {
+            const cells = board.getElementsByClassName('cell');
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].textContent = boardState[i];
+                cells[i].className = 'cell ' + (boardState[i] === 'X' ? 'X' : (boardState[i] === 'O' ? 'O' : ''));
+            }
+        }
+
+        function updateStatus(statusData) {
+            if (statusData.winner) {
+                status.textContent = statusData.winner === 'Draw' ? 'It\'s a Draw!' : statusData.winner + ' Wins!';
+            } else {
+                status.textContent = 'Turn: ' + statusData.turn;
+            }
+        }
+    </script>
+</body>
+</html>
